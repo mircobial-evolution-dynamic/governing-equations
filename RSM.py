@@ -42,15 +42,20 @@ p1 = p1[:, 1:]
 
 coeff_ = np.dot(np.linalg.pinv(p1.T), exp_data.T)
 est = np.dot(p1.T, coeff_)
-plt.plot(est[:,2], lw=4)
-plt.plot(exp_data[2,:].T)
+plt.plot(est[:,0], '-*', lw=4, color='salmon', label ='est_dR')
+plt.plot(exp_data[0,:].T, color='red', label ='true_dR')
+plt.plot(est[:,1],'-*', lw=4, color='skyblue', label ='est_dS')
+plt.plot(exp_data[1,:].T, color='blue', label = 'true_dS')
+plt.plot(est[:,2], '-*',lw=4, color='grey', label = 'est_dM')
+plt.plot(exp_data[2,:].T, color='black', label = 'true_dM')
+plt.legend()
 plt.show()
 print(est)
 
-csvfile = "./output.csv"
-with open(csvfile, "w") as output:
-    writer = csv.writer(output, lineterminator='\n')
-    writer.writerows(coeff_)
+# csvfile = "./output.csv"
+# with open(csvfile, "w") as output:
+#     writer = csv.writer(output, lineterminator='\n')
+#     writer.writerows(coeff_)
 
 # print(exp_data.shape)
 # print(p1.shape)
