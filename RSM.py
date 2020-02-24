@@ -18,11 +18,11 @@ dt = 0.01
 ini = [10, 10000, 0]
 sol = integrate.solve_ivp(RSM, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
 
-plt.plot(sol.t, sol.y[0].T, label='R')
-plt.plot(sol.t, sol.y[1].T, label='S')
-plt.plot(sol.t, sol.y[2].T, label='M')
-plt.legend()
-plt.show()
+# plt.plot(sol.t, sol.y[0].T, label='R')
+# plt.plot(sol.t, sol.y[1].T, label='S')
+# plt.plot(sol.t, sol.y[2].T, label='M')
+# plt.legend()
+# plt.show()
 # print(sol.y.shape)
 
 def data_aug(sol_):
@@ -40,22 +40,53 @@ p1 = data_aug(sol.y)
 exp_data = np.diff(sol.y, axis=1) /dt
 p1 = p1[:, 1:]
 
-coeff_ = np.dot(np.linalg.pinv(p1.T), exp_data.T)
+#coeff_initial = np.dot(np.linalg.pinv(p1.T), exp_data.T)
+
+theta = p1.T
+exp_data = exp_data.T
+coeff_ = np.dot(np.linalg.pinv(theta), exp_data)
+
+for k in range(1000):
+    small_idx = (abs(coeff_) < 5e-7)
+    big_idx = (abs(coeff_) >= 5e-7)
+    coeff_[small_idx] = 0
+    for i in range(len(exp_data[0])):
+        #big_idx = np.bitwise_not([small_idx[:,i]]).T
+        coeff_[big_idx[:,i],i] = np.dot(np.linalg.pinv(theta[:,big_idx[:,i]]), exp_data[:, i])
+print(coeff_)
+# def sparsifyDynamics(p1, exp_data, lambda, n):
+#     theta = p1.T
+#     exp_data = exp_data.T
+#     coeff_ = np.dot(np.linalg.pinv(p1.T), exp_data.T)
+#
+#     for k in range(50):
+#         small_idx = abs(coeff_) < lambda
+#         coeff_[small_idx] = 0
+#         for i in range(len(exp_data)):
+#         big_idx != small_idx[:,i]
+#         coeff_[big_idx, i] = np.dot(np.linalg.pinv(theta[:,big_idx]), exp_data[:,idx])
+#     return coeff_
+
+#coeff_ = sparsifyDynamics(p1, exp_data, 5e-7, 3)
+
+
+#print(coeff_)
 est = np.dot(p1.T, coeff_)
-plt.plot(est[:,0], '-*', lw=4, color='salmon', label ='est_dR')
-plt.plot(exp_data[0,:].T, color='red', label ='true_dR')
-plt.plot(est[:,1],'-*', lw=4, color='skyblue', label ='est_dS')
-plt.plot(exp_data[1,:].T, color='blue', label = 'true_dS')
-plt.plot(est[:,2], '-*',lw=4, color='grey', label = 'est_dM')
-plt.plot(exp_data[2,:].T, color='black', label = 'true_dM')
+#
+plt.plot(est[:,0], '-*', lw=3, color='salmon', label ='est_dR')
+plt.plot(exp_data[:,0], color='red', label ='true_dR')
+plt.plot(est[:,1],'-*', lw=3, color='skyblue', label ='est_dS')
+plt.plot(exp_data[:,1], color='blue', label = 'true_dS')
+plt.plot(est[:,2], '-*',lw=3, color='grey', label = 'est_dM')
+plt.plot(exp_data[:,2], color='black', label = 'true_dM')
 plt.legend()
 plt.show()
-print(est)
+# print(est)
 
-# csvfile = "./output.csv"
-# with open(csvfile, "w") as output:
-#     writer = csv.writer(output, lineterminator='\n')
-#     writer.writerows(coeff_)
+csvfile = "./output2.csv"
+with open(csvfile, "w") as output2:
+    writer = csv.writer(output2, lineterminator='\n')
+    writer.writerows(coeff_)
 
 # print(exp_data.shape)
 # print(p1.shape)
