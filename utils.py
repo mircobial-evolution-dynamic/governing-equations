@@ -1,2 +1,2 @@
 class utils():
-    def 
+    def
