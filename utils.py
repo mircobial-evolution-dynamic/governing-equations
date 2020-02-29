@@ -1,7 +1,4 @@
 class utils:
-<<<<<<< HEAD
-    def
-=======
     ##build library
     def power(d,order):
     # d is the number of variables; order of polynomials
@@ -26,5 +23,22 @@ class utils:
             Theta = np.hstack([Theta, new_col.reshape(t,1)])
         return Theta
 
+    def lib(data,order,description):
+        #description is a list of name of variables, like [R, M, S]
+        #description of lib
+        descr = []
+        #data is the input data, like R,M,S; order is the total order of polynomials
+    
+        d,t = data.shape # d is the number of variables; t is the number of time points
+        Theta = np.ones((t,1), dtype=np.complex64) # the first column of lib is '1'
+        P = power(d,order)
+        for i in range(len(P)):
+            new_col = np.zeros((t,1),dtype=np.complex64)
+            for j in range(t):
+                new_col[j] = np.prod(np.power(list(data[:,j]),list(P[i])))
+            Theta = np.hstack([Theta, new_col.reshape(t,1)])
+            descr.append("{0} {1}".format(str(P[i]), str(description)))
+        descr = ['1']+descr
+        
+        return Theta,descr
     ##
->>>>>>> ace3b17f53b59ae2d8c977912c683b08302f47bf
