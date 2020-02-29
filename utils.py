@@ -1,2 +1,2 @@
-class utils():
+class utils:
     def
