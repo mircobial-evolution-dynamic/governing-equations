@@ -21,49 +21,6 @@ def newmm(t,x):
     return np.divide((k1 + k2*x), (k3 + k4*x))
 
 
-
-tspan = np.linspace(0.01, 4, num=400)
-dt = 0.01
-ini = [0.5]
-sol = integrate.solve_ivp(MMKinetics, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
-sol2 = integrate.solve_ivp(newmm, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
-plt.plot(sol.y[0])
-plt.plot(sol2.y[0])
-plt.show()
-
-sol_dx = MMKinetics(sol.t, sol.y)
-# plt.show()
-exp_data = sol_dx  #shape:(1,400)
-
-###########add noise###########||begin
-##add noise to 'x'##
-eps = 1e-4  #float; magnitude of noise
-SIZE = np.size(sol.y[0])
-sol_noise=sol.y+eps*np.random.normal(0,1,(SIZE))#np.size=400; shape=(1,400); type=numpy.ndarray
-
-##calculate the corresponding derivative##
-sol_noise_dx = MMKinetics(sol.t, sol_noise)
-##add noise to 'dx'##
-eps = 0  #???
-SIZE = np.size(sol_dx)
-sol_dx_noise=sol_dx+eps*np.random.normal(0,1,(SIZE))#shape=(1,400); type=numpy.ndarray
-
-################################
-##figures##
-#figure(5) in MATLAB
-# sol_Noise = sol_noise[0]
-plt.plot(sol_noise[0])
-plt.show()
-
-#figure(6) in MATLAB
-sol_dx_Noise = sol_dx_noise[0]#shape=(400,)
-plt.plot(sol_dx_Noise)
-plt.show()
-#another figure(6) in MATLAB
-plt.plot(sol_noise_dx[0])
-plt.show()
-###########||end
-
 def data_aug(sol_):
     n = len(sol_)
     m = sol_.size
@@ -84,16 +41,6 @@ def data_derivative(sol_,d_sol_):
     for i in range(n):
         sol_ = np.vstack((sol_, np.multiply(sol_[i], d_sol_)))
     return sol_
-
-
-###############||
-#test noise-added data
-sol.y = sol_noise
-sol_dx = sol_noise_dx
-# sol_dx = sol_dx_noise  # does not work
-term_lib = data_aug(sol.y)
-term_lib = data_derivative(term_lib, sol_dx).T#x,x^2,dx*x...; ## transpose ## 400*8
-###############||
 
 
 def soft_thresholding(X, lambda_):
@@ -145,9 +92,36 @@ def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
     numterms = len(ind_lib)
     return ind_lib, Xi, numterms
 
+# def ADMpareto(term_lib, tol, pflag):
+#     lib_null = linalg.null_space(term_lib)
+#     num = 1
+#     lambda_ = 1e-8
+#     MaxIter = 10000
+#     dic_lib = {}
+#     dic_Xi = {}
+#     dic_num = {}
+#     dic_error = {}
+#     dic_lambda = {}
+#     ii = 0
+#     while num > 0:
+#         temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag)
+#         dic_lib[ii] = temp_ind_lib
+#         dic_Xi[ii] = temp_Xi
+#         dic_num[ii] = temp_numterms
 
-    ##############################||begin
-    ####def optimal_SVHT_coef###
+#         error_temp = sum(np.matmul(term_lib, dic_Xi[ii]))
+#         dic_error[ii] = error_temp
+#         dic_lambda[ii] = lambda_
+#         lambda_ *= 2
+#         num = dic_num[ii]
+#         ii += 1
+#         if lambda_ > 0.5:
+#             break
+
+#     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
+
+
+#def optimal_SVHT_coef
 def IfElse(Q,point,counterPoint):
     #if Q, POINT, COUNTERPOINT ARE arrays???; len(point) should equal or greater than len(Q)!
     y=point;
@@ -265,7 +239,7 @@ def MedianMarcenkoPastur(beta):
 
 def optimal_SVHT_coef_sigma_known(beta):
     #lambda_star
-    #omit ensuring 0<beta<=1
+    #omit ensuring beta
     w = (8*beta)/(beta+1+np.sqrt(beta**2+14*beta+1))
     lambda_star = np.sqrt(2*(beta+1)+w)
     return lambda_star
@@ -282,10 +256,53 @@ def optimal_SVHT_coef(beta,noiselevel):
         return optimal_SVHT_coef_sigma_unknown(beta)
     else:
         return optimal_SVHT_coef_sigma_known(beta)
-###########################################||end
+    
+    
+    
+    
+# #add noise reduction in ADMpareto; replace previous ADMpareto
+# def ADMpareto(term_lib, tol, pflag):
+#     #####
+#     u, s, vh = np.linalg.svd(term_lib, full_matrices=False)
+#     m,n = term_lib.shape  #m/n aspect ratio of matrix to be denoised?
+#     ydi = np.diag(term_lib)
+#     beta = np.array([n/m])
+#     threshold = optimal_SVHT_coef(beta,0)[0]
+#     ydi2 = np.copy(ydi)
+#     ydi2[ydi2 < threshold*np.median(ydi2)] = 0
+#     term_lib2 = np.linalg.multi_dot([u,np.diag(ydi2),vh.T])  #####no .T?
+#     #####
+#     lib_null = linalg.null_space(term_lib2) #2
+#     num = 1
+#     lambda_ = 1e-8
+#     MaxIter = 10000
 
-####||begin
-#add noise reduction in ADMpareto; replace previous ADMpareto##
+#     dic_lib = {}
+#     dic_Xi = {}
+#     dic_num = {}
+#     dic_error = {}
+#     dic_lambda = {}
+#     ii = 0
+#     while num > 0:
+#         temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag)
+#         dic_lib[ii] = temp_ind_lib
+#         dic_Xi[ii] = temp_Xi
+#         dic_num[ii] = temp_numterms
+
+#         error_temp = sum(np.matmul(term_lib, dic_Xi[ii]))
+#         dic_error[ii] = error_temp
+#         dic_lambda[ii] = lambda_
+#         lambda_ *= 2
+#         num = dic_num[ii]
+#         ii += 1
+#         if lambda_ > 0.5:
+#             break
+
+#     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
+
+
+
+#add noise reduction in ADMpareto; replace previous ADMpareto
 def ADMpareto(term_lib, tol, pflag):
     #####
     u, s, vh = np.linalg.svd(term_lib.T, full_matrices=False)
@@ -324,7 +341,42 @@ def ADMpareto(term_lib, tol, pflag):
             break
 
     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
-#####################||end
+
+
+
+# system size
+n = 1
+
+# parameters
+
+tspan = np.linspace(0.01, 4, num=400)
+dt = 0.01
+ini = [0.5]
+sol = integrate.solve_ivp(MMKinetics, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)#solver; np.size=400; (400,)
+sol2 = integrate.solve_ivp(newmm, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
+
+
+sol_dx = MMKinetics(sol.t, sol.y)
+# plt.show()
+exp_data = sol_dx  #shape:(1,400)
+
+
+#add noise to 'x'
+eps = 1e-4  #float; magnitude of noise
+SIZE = np.size(sol.y[0])
+sol_noise=sol.y+eps*np.random.normal(0,1,(SIZE))#np.size=400; shape=(1,400); type=numpy.ndarray
+#calculate the corresponding derivative
+sol_noise_dx = MMKinetics(sol.t, sol_noise)
+
+# #test noise-added data
+# sol.y = sol_noise
+# sol_dx = sol_noise_dx
+# # sol_dx = sol_dx_noise  # does not work
+term_lib = data_aug(sol_noise)
+term_lib = data_derivative(term_lib, sol_noise_dx).T#x,x^2,dx*x...; ## transpose ## 400*8
+
+# term_lib = data_aug(sol.y)
+# term_lib = data_derivative(term_lib, sol_dx).T#x,x^2,dx*x...; ## transpose ## 400*8
 
 tol, pflag = 1e-5,1
 dic_Xi, dic_lib, dic_lambda, dic_num, dic_error = ADMpareto(term_lib,tol, pflag)
@@ -343,20 +395,3 @@ plt.scatter(terms_vec, log_err_vec)
 plt.xlabel("Number of terms")
 plt.ylabel("Error (log)")
 plt.show()
-
-
-def new_MMKinetics(term_lib, dic_Xi, n):
-    half_count = int(term_lib.shape[1] /2)
-    total_xi = len(dic_Xi)
-    #term_coff = dic_Xi[total_xi - n]
-    term_coff = [0.18, -0.9, 0, 0, 0.3, 1, 0, 0]
-    print(term_coff)
-    return -np.divide(np.matmul(term_lib[:,:half_count], term_coff[:half_count]),
-                      np.matmul(term_lib[:,half_count:], term_coff[half_count:]))
-
-
-
-# res2 = new_MMKinetics(term_lib, dic_Xi, 4)
-# plt.plot(sol_dx[0])
-# plt.plot(res2)
-# plt.show()
