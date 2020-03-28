@@ -288,14 +288,14 @@ def optimal_SVHT_coef(beta,noiselevel):
 #add noise reduction in ADMpareto; replace previous ADMpareto##
 def ADMpareto(term_lib, tol, pflag):
     #####
-    u, s, vh = np.linalg.svd(term_lib, full_matrices=False)
-    m,n = term_lib.shape  #m/n aspect ratio of matrix to be denoised?
-    ydi = np.diag(term_lib)
+    u, s, vh = np.linalg.svd(term_lib.T, full_matrices=False)
+    m,n = term_lib.T.shape  #m/n aspect ratio of matrix to be denoised?
+    ydi = np.diag(term_lib.T)
     beta = np.array([m/n])
     threshold = optimal_SVHT_coef(beta,0)[0]
     ydi2 = np.copy(ydi)
     ydi2[ydi2 < threshold*np.median(ydi2)] = 0
-    term_lib2 = np.linalg.multi_dot([u,np.diag(ydi2),vh.T])  #####no .T?
+    term_lib2 = np.linalg.multi_dot([u,np.diag(ydi2),vh]).T  #####no .T?
     #####
     lib_null = linalg.null_space(term_lib2) #2
     num = 1
@@ -324,7 +324,6 @@ def ADMpareto(term_lib, tol, pflag):
             break
 
     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
-
 #####################||end
 
 tol, pflag = 1e-5,1
