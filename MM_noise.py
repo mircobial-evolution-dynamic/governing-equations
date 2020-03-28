@@ -86,8 +86,14 @@ def data_derivative(sol_,d_sol_):
     return sol_
 
 
+###############||
+#test noise-added data
+sol.y = sol_noise
+sol_dx = sol_noise_dx
+# sol_dx = sol_dx_noise  # does not work
 term_lib = data_aug(sol.y)
 term_lib = data_derivative(term_lib, sol_dx).T#x,x^2,dx*x...; ## transpose ## 400*8
+###############||
 
 
 def soft_thresholding(X, lambda_):
@@ -259,7 +265,7 @@ def MedianMarcenkoPastur(beta):
 
 def optimal_SVHT_coef_sigma_known(beta):
     #lambda_star
-    #omit ensuring beta
+    #omit ensuring 0<beta<=1
     w = (8*beta)/(beta+1+np.sqrt(beta**2+14*beta+1))
     lambda_star = np.sqrt(2*(beta+1)+w)
     return lambda_star
@@ -351,7 +357,7 @@ def new_MMKinetics(term_lib, dic_Xi, n):
 
 
 
-res2 = new_MMKinetics(term_lib, dic_Xi, 4)
-plt.plot(sol_dx[0])
-plt.plot(res2)
-plt.show()
+# res2 = new_MMKinetics(term_lib, dic_Xi, 4)
+# plt.plot(sol_dx[0])
+# plt.plot(res2)
+# plt.show()
