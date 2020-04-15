@@ -93,3 +93,26 @@ class utils:
         Xi[small_idx] = 0
         numterms = len(ind_lib)
         return ind_lib, Xi, numterms
+    
+    
+    
+    
+    def sparsifyDynamics(Theta, dx, Lambda, n):
+    #theta.shape = 248*10 (time points*functions); dx.shape = 3*248 (variables*time points)
+    #need to ensure size or dimenssions !!!
+    dx = dx.T
+    m,n = dx.shape  #(248*3)
+    Xi = np.dot(np.linalg.pinv(Theta), dx)  #Xi.shape = 10*3
+    # lambda is sparasification knob
+    for k in range(10):      ###??
+        small_idx = (abs(Xi) < Lambda)
+        big_idx = (abs(Xi) >= Lambda)
+        Xi[small_idx] = 0
+#     for i in range(n):
+#         #big_idx = np.bitwise_not([small_idx[:,i]]).T
+#         if dx == 0:
+#             Xi[big_idx[:,i],i] = linalg.null_space(Theta[:,big_idx[:,i]])
+#         else:
+#             Xi[big_idx[:,i],i] = np.dot(np.linalg.pinv(Theta[:,big_idx[:,i]]), dx[:, i])
+
+    return Xi
