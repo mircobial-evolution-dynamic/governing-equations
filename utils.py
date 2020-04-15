@@ -1,6 +1,6 @@
 class utils:
     ##build library
-    def power(d,order):
+    def power_(d,order):
     # d is the number of variables; order of polynomials
         powers = []
         for p in range(1,order+1):
@@ -15,7 +15,7 @@ class utils:
         #data is the input data - sol.y, like R,M,S; order is the total order of polynomials
         d,t = data.shape # d is the number of variables; t is the number of time points
         Theta = np.ones((t,1), dtype=np.complex64) # the first column of lib is '1'
-        P = power(d,order)
+        P = power_(d,order)
         for i in range(len(P)):
             new_col = np.zeros((t,1),dtype=np.complex64)
             for j in range(t):
@@ -23,7 +23,7 @@ class utils:
             Theta = np.hstack([Theta, new_col.reshape(t,1)])
         return Theta
 
-    def lib(data,order,description):
+    def lib_terms(data,order,description):
         #description is a list of name of variables, like [R, M, S]
         #description of lib
         descr = []
@@ -31,7 +31,7 @@ class utils:
     
         d,t = data.shape # d is the number of variables; t is the number of time points
         Theta = np.ones((t,1), dtype=np.complex64) # the first column of lib is '1'
-        P = power(d,order)
+        P = power_(d,order)
         for i in range(len(P)):
             new_col = np.zeros((t,1),dtype=np.complex64)
             for j in range(t):
@@ -104,7 +104,7 @@ class utils:
     m,n = dx.shape  #(248*3)
     Xi = np.dot(np.linalg.pinv(Theta), dx)  #Xi.shape = 10*3
     # lambda is sparasification knob
-    for k in range(10):      ###??
+    for k in range(n):      ###??
         small_idx = (abs(Xi) < Lambda)
         big_idx = (abs(Xi) >= Lambda)
         Xi[small_idx] = 0
