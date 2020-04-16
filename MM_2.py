@@ -7,31 +7,25 @@ from utils import *
 # system size
 n = 1
 
-
-def MMKinetics(t, x):
-    Vmax, Km, k = 1.5, 0.3, 0.6
-    return k - np.divide(Vmax*x, (Km+x))
-
-def newmm(t,x):
-    k1, k2, k3, k4 = 0.1295, -0.6474, 0.2158, 0.7194
-    return np.divide((k1 + k2*x), (k3 + k4*x))
-
-
+# default value
+Vmax, Km, k = 1.5, 0.3, 0.6
 tspan = np.linspace(0.01, 4, num=400)
 dt = 0.01
 ini = [0.5]
-sol = integrate.solve_ivp(MMKinetics, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
-sol2 = integrate.solve_ivp(newmm, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
+
+
+sol = integrate.solve_ivp(fun=lambda t, x: MMKinetics(t, x, Vmax, Km, k),
+                          t_span=[tspan[0], tspan[-1]], y0=ini, method='RK45', t_eval=tspan)
+
+
 plt.plot(sol.y[0])
-plt.plot(sol2.y[0])
 plt.show()
 
-sol_dx = MMKinetics(sol.t, sol.y)
+sol_dx = MMKinetics(sol.t, sol.y, Vmax, Km, k)
 plt.show()
-#exp_data = sol_dx
 term_lib, term_des = lib_terms(sol.y, 6, "")
 term_lib = np.hstack((term_lib, term_lib * sol_dx.T))
-# null_ = linalg.null_space(term_lib)
+
 
 tol, pflag = 1e-5,1
 dic_Xi, dic_lib, dic_lambda, dic_num, dic_error = ADMpareto(term_lib,tol, pflag)
@@ -42,6 +36,7 @@ log_err_vec = np.log(err_vec)
 log_lambda_vec = np.log(lambda_vec)
 
 # plot
+plt.figure(figsize=(10,6))
 plt.subplot(1,2,1)
 plt.scatter(log_lambda_vec, terms_vec)
 plt.xlabel("Threshold (log_$\lambda$)")
