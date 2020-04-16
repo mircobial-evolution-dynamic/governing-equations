@@ -200,3 +200,5 @@ def evaluate(theta, lambdastart, lambdaend, numlambda, dx):
     eucdist_vec = np.array(eucdist_vec)
     num_terms = np.array(num_terms)
     return lambda_vec, eucdist_vec, num_terms
+
+    ###
