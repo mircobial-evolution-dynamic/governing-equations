@@ -92,34 +92,6 @@ def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
     numterms = len(ind_lib)
     return ind_lib, Xi, numterms
 
-# def ADMpareto(term_lib, tol, pflag):
-#     lib_null = linalg.null_space(term_lib)
-#     num = 1
-#     lambda_ = 1e-8
-#     MaxIter = 10000
-#     dic_lib = {}
-#     dic_Xi = {}
-#     dic_num = {}
-#     dic_error = {}
-#     dic_lambda = {}
-#     ii = 0
-#     while num > 0:
-#         temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag)
-#         dic_lib[ii] = temp_ind_lib
-#         dic_Xi[ii] = temp_Xi
-#         dic_num[ii] = temp_numterms
-
-#         error_temp = sum(np.matmul(term_lib, dic_Xi[ii]))
-#         dic_error[ii] = error_temp
-#         dic_lambda[ii] = lambda_
-#         lambda_ *= 2
-#         num = dic_num[ii]
-#         ii += 1
-#         if lambda_ > 0.5:
-#             break
-
-#     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
-
 
 #def optimal_SVHT_coef
 def IfElse(Q,point,counterPoint):
@@ -385,6 +357,8 @@ terms_vec = list(dic_num.values())
 err_vec = list(dic_error.values())
 log_err_vec = np.log10(err_vec)
 log_lambda_vec = np.log10(lambda_vec)
+
+print(dic_Xi)
 
 plt.subplot(1,2,1)
 plt.scatter(log_lambda_vec, terms_vec)
