@@ -15,11 +15,24 @@ def hillfunc(t, x):
     k = 1
     return 1 + np.divide(x**4,  (k**4 + x**4))
 
+def new_hillfunc(t, x):
+    return np.divide((0.756*(x**4) + 0.378), (0.378 + 0.378 * (x**4)))
 
-tspan = np.linspace(0.01, 15, num=400)
+tspan = np.linspace(0.01, 2, num=400)
 dt = 0.01
-ini = [1]
+ini = [0.001]
 sol = integrate.solve_ivp(hillfunc, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
+sol2 = integrate.solve_ivp(new_hillfunc, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
+
+plt.plot(sol.y[0],linewidth=2, label='Ground Truth', color='orange')
+plt.plot(sol2.y[0],linestyle='dashed', label='Identified Value', color='black')
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
+plt.xlabel('Time Steps', fontsize= 18)
+plt.ylabel('Substrate Concentration', fontsize = 18)
+plt.legend(fontsize = 18)
+plt.show()
+
 
 
 sol_dx = hillfunc(sol.t, sol.y)
