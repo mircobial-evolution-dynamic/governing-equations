@@ -101,26 +101,25 @@ def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
 
 
 
-
-def sparsifyDynamics(Theta, dx, Lambda, n):
-    #theta.shape = 248*10 (time points*functions); dx.shape = 3*248 (variables*time points)
+def sparsifyDynamics(Theta, dx, Lambda):
+    #theta.shape = 248*10 (time points*functions); dx.shape = 248*3 (time points*variables)
     #need to ensure size or dimenssions !!!
-    dx = dx.T
+#     dx = dx.T
     m,n = dx.shape  #(248*3)
     Xi = np.dot(np.linalg.pinv(Theta), dx)  #Xi.shape = 10*3
     # lambda is sparasification knob
-    for k in range(n):      ###??
+    for k in range(10):      ###??
         small_idx = (abs(Xi) < Lambda)
         big_idx = (abs(Xi) >= Lambda)
         Xi[small_idx] = 0
-    #     for i in range(n):
-    #         #big_idx = np.bitwise_not([small_idx[:,i]]).T
-    #         if dx == 0:
-    #             Xi[big_idx[:,i],i] = linalg.null_space(Theta[:,big_idx[:,i]])
-    #         else:
-    #             Xi[big_idx[:,i],i] = np.dot(np.linalg.pinv(Theta[:,big_idx[:,i]]), dx[:, i])
+#     for i in range(n):
+#         #big_idx = np.bitwise_not([small_idx[:,i]]).T
+#         if dx == 0:
+#             Xi[big_idx[:,i],i] = linalg.null_space(Theta[:,big_idx[:,i]])
+#         else:
+#             Xi[big_idx[:,i],i] = np.dot(np.linalg.pinv(Theta[:,big_idx[:,i]]), dx[:, i])
 
-    return Xi
+    return Xi   #num of functions*num of variables
 
 
 def soft_thresholding(X, lambda_):
@@ -169,3 +168,35 @@ def data_derivative(sol_, d_sol_):
     for i in range(n):
         sol_ = np.vstack((sol_, np.multiply(sol_[i], d_sol_)))
     return sol_
+
+
+
+
+def eucdist_2D(matrix1, matrix2):
+    #return sum of euclidean distance of two matrices
+    m,n = matrix1.shape
+    m1,n1 = matrix2.shape
+    if m != m1 or n != n1:
+        import os, warnings
+        warnings.warn('dimession conflict')
+    eucdist = 0
+    for i in range(n):
+        eucdist = eucdist + np.linalg.norm(matrix1[:,i]-matrix2[:,i])
+        
+    return eucdist
+
+
+
+def evaluate(theta, lambdastart, lambdaend, numlambda, dx):
+    # return lambda vector, euclidean vector (as the evaluation index), and num of terms
+    lambda_vec = np.logspace(lambdastart, lambdaend, numlambda)
+    eucdist_vec = []
+    num_terms = []
+    for i in lambda_vec:
+        Xi = sparsifyDynamics(theta, dx, i)
+        sim_dx = np.matmul(theta,Xi)
+        eucdist_vec.append(eucdist_2D(dx, sim_dx))
+        num_terms.append(np.count_nonzero(Xi))
+    eucdist_vec = np.array(eucdist_vec)
+    num_terms = np.array(num_terms)
+    return lambda_vec, eucdist_vec, num_terms
