@@ -201,4 +201,7 @@ def evaluate(theta, lambdastart, lambdaend, numlambda, dx):
     num_terms = np.array(num_terms)
     return lambda_vec, eucdist_vec, num_terms
 
+def MMKinetics(t, x, Vmax, Km, k):
+    return k - np.divide(Vmax * x, (Km + x))
+
     ###
