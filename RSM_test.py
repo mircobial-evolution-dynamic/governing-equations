@@ -20,29 +20,43 @@ dt = 0.01
 ini = [10, 10000, 0]
 sol = integrate.solve_ivp(RSM, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
 
-sol_dx = RSM(sol.t, sol.y)
-plt.show()
-term_lib, term_des = lib_terms(sol.y, 3, "")
-# for i in range():
-#     term_lib = np.hstack((term_lib, term_lib * sol_dx[i].T))
+sol_dx = np.array(RSM(sol.t, sol.y))
+term_lib, term_des = lib_terms(sol.y, 4, "")
+# for i in range(sol_dx.shape[0]):
+#     term_lib = np.hstack((term_lib, term_lib * sol_dx[[i]].T))
 
-tol, pflag = 1e-5,1
-dic_Xi, dic_lib, dic_lambda, dic_num, dic_error = ADMpareto(term_lib,tol, pflag)
-lambda_vec = list(dic_lambda.values())
-terms_vec = list(dic_num.values())
-err_vec = list(dic_error.values())
-log_err_vec = np.log(err_vec)
-log_lambda_vec = np.log(lambda_vec)
+num = 3
+lambda_ = 1e-8
+MaxIter = 10000
+dic_lib = {}
+dic_Xi = {}
+dic_num = {}
+dic_error = {}
+dic_lambda = {}
+i = 0
 
-# plot
-plt.figure(figsize=(10,6))
-plt.subplot(1,2,1)
-plt.scatter(log_lambda_vec, terms_vec)
-plt.xlabel("Threshold (log_$\lambda$)")
-plt.ylabel("Number of terms")
-plt.subplot(1,2,2)
-plt.scatter(terms_vec, log_err_vec)
-plt.xlabel("Number of terms")
-plt.ylabel("Error (log)")
-plt.show()
+while True:
+    coeff_ = sparsifyDynamics(term_lib, sol_dx.T, lambda_)
+    dic_Xi[i] = coeff_
+    temp_ = np.matmul(term_lib, dic_Xi[i])
+    err_tmp = eucdist_2D(temp_, sol_dx.T)
+    dic_error[i] = err_tmp
+    dic_lambda[i] = lambda_
+    lambda_ *= 2
+    i += 1
+    if lambda_ > 0.5:
+        break
+
+
+
+# plt.figure(figsize=(10,6))
+# plt.subplot(1,2,1)
+# plt.scatter(log_lambda_vec, terms_vec)
+# plt.xlabel("Threshold (log_$\lambda$)")
+# plt.ylabel("Number of terms")
+# plt.subplot(1,2,2)
+# plt.scatter(terms_vec, log_err_vec)
+# plt.xlabel("Number of terms")
+# plt.ylabel("Error (log)")
+# plt.show()
 
