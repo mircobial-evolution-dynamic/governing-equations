@@ -53,22 +53,5 @@ def sparsifyDynamics(theta, exp_data, lambda1):
 coeff_ = sparsifyDynamics(theta, exp_data, 0.05)
 
 
-print(coeff_)
-est = np.dot(p1.T, coeff_)
-#
-plt.plot(est[:,0], '-*', lw=3, color='salmon', label ='est_dR')
-plt.plot(exp_data[:,0], color='red', label ='true_dR')
-plt.plot(est[:,1],'-*', lw=3, color='skyblue', label ='est_dS')
-plt.plot(exp_data[:,1], color='blue', label = 'true_dS')
-plt.plot(est[:,2], '-*',lw=3, color='grey', label = 'est_dM')
-plt.plot(exp_data[:,2], color='black', label = 'true_dM')
-plt.legend()
-plt.show()
-# print(est)
 
-# csvfile = "./output2.csv"
-# with open(csvfile, "w") as output2:
-#     writer = csv.writer(output2, lineterminator='\n')
-#     writer.writerows(coeff_)
-#
-#
+
