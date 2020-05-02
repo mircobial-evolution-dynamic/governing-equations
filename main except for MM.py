@@ -294,16 +294,17 @@ plt.show()
 
 RSM_Xi = sparsifyDynamics(theta, dx.T, 8.85866790e-04)
 
+print(RSM_Xi)
+
 m, n = RSM_Xi.shape
 RSM_Xi_sf = [[] for _ in range(m)]
 
 for i in range(m):
     for j in range(n):
-        if RSM_Xi[i, j] < 1e-6:
-            RSM_Xi_sf[i].append('0.0e-05')
+        if abs(RSM_Xi[i, j]) < 1e-6:
+            RSM_Xi_sf[i].append('0.0e-06')
         else:
-            RSM_Xi_sf[i].append('{:.1e}'.format(SEIR_Xi[i, j]))
-
+            RSM_Xi_sf[i].append('{:.1e}'.format(RSM_Xi[i, j]))
 
 print(np.array(RSM_Xi_sf))
 
