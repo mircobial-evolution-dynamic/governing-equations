@@ -179,6 +179,10 @@ plt.subplots_adjust(wspace=0.5)
 # plt.title('SEIR with Euclidean Distance')
 plt.show()
 
+SEIR_Xi = sparsifyDynamics(theta, dx.T, -80.98939812)
+SEIR_Xi = np.around(Xi,decimals=5)
+print(SEIR_Xi)
+
 #########################################################################################
 ##RSM Model##
 def RSM(t, pop):
@@ -276,7 +280,9 @@ plt.subplots_adjust(wspace=0.5)
 # plt.title('SEIR with Euclidean Distance')
 plt.show()
 
-
+RSM_Xi = sparsifyDynamics(theta, dx.T, 8.85866790e-04)
+RSM_Xi = np.around(Xi,decimals=4)
+print(RSM_Xi)
 
 # ######################################################################################
 # ##### Lorenz System with changed params ######
