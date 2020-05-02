@@ -180,8 +180,20 @@ plt.subplots_adjust(wspace=0.5)
 plt.show()
 
 SEIR_Xi = sparsifyDynamics(theta, dx.T, -80.98939812)
-SEIR_Xi = np.around(Xi,decimals=5)
-print(SEIR_Xi)
+m, n = SEIR_Xi.shape
+
+SEIR_Xi_sf = [[] for _ in range(m)]
+
+for i in range(m):
+    for j in range(n):
+        if SEIR_Xi[i, j] < 1e-6:
+            SEIR_Xi_sf[i].append('0.0e-05')
+        else:
+            SEIR_Xi_sf[i].append('{:.1e}'.format(SEIR_Xi[i, j]))
+
+
+print(np.array(SEIR_Xi_sf))
+
 
 #########################################################################################
 ##RSM Model##
@@ -193,7 +205,7 @@ def RSM(t, pop):
     return np.array([a_r*R*(1-(R+S+M)/K),
             a_s*S*(1-(R+S+M)/K) - e*S*R - f*S*M,
             a_m*M*(1-(R+S+M)/K) + e*S*R + f*S*M])
-            
+
 tspan = np.linspace(0, 20, num=2001)
 dt = 0.01
 ini = [10, 100, 0]
@@ -281,167 +293,102 @@ plt.subplots_adjust(wspace=0.5)
 plt.show()
 
 RSM_Xi = sparsifyDynamics(theta, dx.T, 8.85866790e-04)
-RSM_Xi = np.around(Xi,decimals=4)
-print(RSM_Xi)
 
-# ######################################################################################
-# ##### Lorenz System with changed params ######
-# def lorenz(t, pop):
-#     # alpha, beta, pho = 10, 8/3, 28
-#     alpha, beta, pho = 10, 2, 25
-#     x, y, z = pop
-#     return np.array([alpha*(y-x),
-#             x*(pho-z) - y,
-#             x*y - beta*z])
+m, n = RSM_Xi.shape
+RSM_Xi_sf = [[] for _ in range(m)]
 
-# tspan = np.linspace(0.001, 100, num=100000)
-# dt = 0.001
-# ini = [-8, 7, 27]
-# sol = integrate.solve_ivp(lorenz, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
+for i in range(m):
+    for j in range(n):
+        if RSM_Xi[i, j] < 1e-6:
+            RSM_Xi_sf[i].append('0.0e-05')
+        else:
+            RSM_Xi_sf[i].append('{:.1e}'.format(SEIR_Xi[i, j]))
 
 
-# # #fig1
-# # plt.plot(sol.t, sol.y[0].T, 'k',label='x')
-# # plt.plot(sol.t, sol.y[1].T, 'g',label='y')
-# # plt.plot(sol.t, sol.y[2].T, 'y',label='z')
-# # plt.legend()
-# # plt.show()
+print(np.array(RSM_Xi_sf))
 
 
-# #fig2
-# y1 = sol.y[0].T
-# y2 = sol.y[1].T
-# y3 = sol.y[2].T
+######################################################################################
+##### Lorenz System with changed params ######
+def lorenz(t, pop):
+    # alpha, beta, pho = 10, 8/3, 28
+    alpha, beta, pho = 10, 2, 25
+    x, y, z = pop
+    return np.array([alpha*(y-x),
+            x*(pho-z) - y,
+            x*y - beta*z])
 
-# x = sol.t
-
-# fig = plt.figure()
-# plt.subplot(3,1,1)
-# plt.plot(x,y1,'k')
-# plt.title('Time Course Data',fontsize=20)
-# plt.ylabel('x',fontsize=18)
-# plt.tick_params(
-#     axis='x',          # changes apply to the x-axis
-#     which='both',      # both major and minor ticks are affected
-#     bottom=False,      # ticks along the bottom edge are off
-#     top=False,         # ticks along the top edge are off
-#     labelbottom=False) # labels along the bottom edge are off
-
-# plt.subplot(3,1,2)
-# plt.plot(x,y2,'g')
-# plt.tick_params(
-#     axis='x',          # changes apply to the x-axis
-#     which='both',      # both major and minor ticks are affected
-#     bottom=False,      # ticks along the bottom edge are off
-#     top=False,         # ticks along the top edge are off
-#     labelbottom=False) # labels along the bottom edge are off
-# plt.ylabel('y',fontsize=18)
+tspan = np.linspace(0.001, 100, num=100000)
+dt = 0.001
+ini = [-8, 7, 27]
+sol = integrate.solve_ivp(lorenz, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
 
 
-# plt.subplot(3,1,3)
-# plt.plot(x,y3,'b')
-# plt.ylabel('z',fontsize=18)
-# plt.xlabel('time step',fontsize=18)
-# plt.show()
-
-# # plt.savefig('lorenz_timecourse.png')
-
-
-# #fig3
-# fig = plt.figure()
-# ax = plt.axes(projection = '3d')
-# xdata = sol.y[0]
-# ydata = sol.y[1]
-# zdata = sol.y[2]
-# # ax.scatter3D(xdata,ydata,zdata, c=zdata)
-# ax.plot3D(xdata,ydata,zdata)
-# ax.set_xlabel('x',fontsize=18)
-# ax.set_ylabel('y',fontsize=18)
-# ax.set_zlabel('z',fontsize=18)
-# ax.set_title('Trajectory',fontsize=20)
+# #fig1
+# plt.plot(sol.t, sol.y[0].T, 'k',label='x')
+# plt.plot(sol.t, sol.y[1].T, 'g',label='y')
+# plt.plot(sol.t, sol.y[2].T, 'y',label='z')
+# plt.legend()
 # plt.show()
 
 
-# # #### results ######
-# # dx = lorenz(sol.t, sol.y)
-# # theta, descr = lib_terms(sol.y,3,'xyz')
-# # ## theta and descr
-# # Xi = sparsifyDynamics(theta, dx.T, 0.05)
-# # print(Xi)
-# # # obtain Xi here by changing lambda
-# # L,E,N = evaluate(theta,-5,1,10,dx.T)
-# # print(L)
-# # print(E)
-# # print(N)
+#fig2
+y1 = sol.y[0].T
+y2 = sol.y[1].T
+y3 = sol.y[2].T
+
+x = sol.t
+
+fig = plt.figure()
+plt.subplot(3,1,1)
+plt.plot(x,y1,'k')
+plt.title('Time Course Data',fontsize=20)
+plt.ylabel('x',fontsize=18)
+plt.tick_params(
+    axis='x',          # changes apply to the x-axis
+    which='both',      # both major and minor ticks are affected
+    bottom=False,      # ticks along the bottom edge are off
+    top=False,         # ticks along the top edge are off
+    labelbottom=False) # labels along the bottom edge are off
+
+plt.subplot(3,1,2)
+plt.plot(x,y2,'g')
+plt.tick_params(
+    axis='x',          # changes apply to the x-axis
+    which='both',      # both major and minor ticks are affected
+    bottom=False,      # ticks along the bottom edge are off
+    top=False,         # ticks along the top edge are off
+    labelbottom=False) # labels along the bottom edge are off
+plt.ylabel('y',fontsize=18)
 
 
-# # plt.subplot(1,2,1)
-# # # plt.scatter(lambda_vec, num_terms)
-# # plt.scatter(L, N)
-# # plt.xlabel("Threshold ($\lambda$)")
-# # plt.ylabel("Number of terms")
-# # plt.subplot(1,2,2)
-# # # plt.scatter(num_terms, eudist_vec)
-# # plt.scatter(N, np.log(E))
-# # plt.xlabel("Number of terms")
-# # plt.ylabel("log Euclidean distance")
-# # plt.title('SEIR with Euclidean Distance')
-# # plt.show()
+plt.subplot(3,1,3)
+plt.plot(x,y3,'b')
+plt.ylabel('z',fontsize=18)
+plt.xlabel('time step',fontsize=18)
+plt.show()
+
+# plt.savefig('lorenz_timecourse.png')
 
 
+#fig3
+fig = plt.figure()
+ax = plt.axes(projection = '3d')
+xdata = sol.y[0]
+ydata = sol.y[1]
+zdata = sol.y[2]
+# ax.scatter3D(xdata,ydata,zdata, c=zdata)
+ax.plot3D(xdata,ydata,zdata)
+ax.set_xlabel('x',fontsize=18)
+ax.set_ylabel('y',fontsize=18)
+ax.set_zlabel('z',fontsize=18)
+ax.set_title('Trajectory',fontsize=20)
+plt.show()
 
 
-# ##### add noise and denoise for Lorenz
-# eps = 1  #float; magnitude of noise
-# sol_noise_y = np.ndarray(shape=(sol.y.shape))
-# for i in range(0,sol.y.shape[0]):
-#     SIZE = np.size(sol.y[i])
-#     sol_noise_y[i] = sol.y[i] + eps*np.random.normal(0,1,(SIZE))
-    
-    
-# fig = plt.figure()
-# ax = plt.axes(projection = '3d')
-# xdata = sol_noise_y[0]
-# ydata = sol_noise_y[1]
-# zdata = sol_noise_y[2]
-# # ax.scatter3D(xdata,ydata,zdata, c=zdata)
-# ax.plot3D(xdata,ydata,zdata)
-# ax.set_xlabel('x',fontsize=18)
-# ax.set_ylabel('y',fontsize=18)
-# ax.set_zlabel('z',fontsize=18)
-# # ax.set_title('trajectory',fontsize=20)
-# ax.set_title('noisy trajectory',fontsize=20)
-# plt.show()
-
-# ##noise reduction
-# from scipy.signal import lfilter
-# n=20
-# b=[1.0/n]*n
-# a=1
-# sol_denoise_y = np.ndarray(shape=(sol.y.shape))
-# for i in range(0,sol_noise_y.shape[0]):
-#     sol_denoise_y[i]=lfilter(b,a,sol_noise_y[i])
-
-# fig = plt.figure()
-# ax = plt.axes(projection = '3d')
-# # xdata = sol_noise_y[0]
-# # ydata = sol_noise_y[1]
-# # zdata = sol_noise_y[2]
-# xdata = sol_denoise_y[0]
-# ydata = sol_denoise_y[1]
-# zdata = sol_denoise_y[2]
-# # ax.scatter3D(xdata,ydata,zdata, c=zdata)
-# ax.plot3D(xdata,ydata,zdata)
-# ax.set_xlabel('x',fontsize=18)
-# ax.set_ylabel('y',fontsize=18)
-# ax.set_zlabel('z',fontsize=18)
-# ax.set_title('denoised trajectory',fontsize=20)
-# plt.show()
-
-
-# #results
-# dx = lorenz(sol.t, sol_denoise_y)
-# theta, descr = lib_terms(sol_denoise_y,3,'xyz')
+# #### results ######
+# dx = lorenz(sol.t, sol.y)
+# theta, descr = lib_terms(sol.y,3,'xyz')
 # ## theta and descr
 # Xi = sparsifyDynamics(theta, dx.T, 0.05)
 # print(Xi)
@@ -451,21 +398,98 @@ print(RSM_Xi)
 # print(E)
 # print(N)
 
-# Xi = sparsifyDynamics(theta, dx.T, 1)
-# print(Xi)
 
-# # plt.title('SEIR with Euclidean Distance')
 # plt.subplot(1,2,1)
 # # plt.scatter(lambda_vec, num_terms)
 # plt.scatter(L, N)
-# plt.xlabel("Threshold ($\lambda$)",fontsize=18)
-# plt.ylabel("Number of terms",fontsize=18)
+# plt.xlabel("Threshold ($\lambda$)")
+# plt.ylabel("Number of terms")
 # plt.subplot(1,2,2)
 # # plt.scatter(num_terms, eudist_vec)
 # plt.scatter(N, np.log(E))
-# plt.xlabel("Number of terms",fontsize=18)
-# plt.ylabel("log Euclidean distance",fontsize=18)
-# plt.subplots_adjust(wspace=0.5)
-
+# plt.xlabel("Number of terms")
+# plt.ylabel("log Euclidean distance")
+# plt.title('SEIR with Euclidean Distance')
 # plt.show()
+
+
+
+
+##### add noise and denoise for Lorenz
+eps = 1  #float; magnitude of noise
+sol_noise_y = np.ndarray(shape=(sol.y.shape))
+for i in range(0,sol.y.shape[0]):
+    SIZE = np.size(sol.y[i])
+    sol_noise_y[i] = sol.y[i] + eps*np.random.normal(0,1,(SIZE))
+    
+    
+fig = plt.figure()
+ax = plt.axes(projection = '3d')
+xdata = sol_noise_y[0]
+ydata = sol_noise_y[1]
+zdata = sol_noise_y[2]
+# ax.scatter3D(xdata,ydata,zdata, c=zdata)
+ax.plot3D(xdata,ydata,zdata)
+ax.set_xlabel('x',fontsize=18)
+ax.set_ylabel('y',fontsize=18)
+ax.set_zlabel('z',fontsize=18)
+# ax.set_title('trajectory',fontsize=20)
+ax.set_title('noisy trajectory',fontsize=20)
+plt.show()
+
+##noise reduction
+from scipy.signal import lfilter
+n=20
+b=[1.0/n]*n
+a=1
+sol_denoise_y = np.ndarray(shape=(sol.y.shape))
+for i in range(0,sol_noise_y.shape[0]):
+    sol_denoise_y[i]=lfilter(b,a,sol_noise_y[i])
+
+fig = plt.figure()
+ax = plt.axes(projection = '3d')
+# xdata = sol_noise_y[0]
+# ydata = sol_noise_y[1]
+# zdata = sol_noise_y[2]
+xdata = sol_denoise_y[0]
+ydata = sol_denoise_y[1]
+zdata = sol_denoise_y[2]
+# ax.scatter3D(xdata,ydata,zdata, c=zdata)
+ax.plot3D(xdata,ydata,zdata)
+ax.set_xlabel('x',fontsize=18)
+ax.set_ylabel('y',fontsize=18)
+ax.set_zlabel('z',fontsize=18)
+ax.set_title('denoised trajectory',fontsize=20)
+plt.show()
+
+
+#results
+dx = lorenz(sol.t, sol_denoise_y)
+theta, descr = lib_terms(sol_denoise_y,3,'xyz')
+## theta and descr
+Xi = sparsifyDynamics(theta, dx.T, 0.05)
+print(Xi)
+# obtain Xi here by changing lambda
+L,E,N = evaluate(theta,-5,1,10,dx.T)
+print(L)
+print(E)
+print(N)
+
+Xi = sparsifyDynamics(theta, dx.T, 1)
+print(Xi)
+
+# plt.title('SEIR with Euclidean Distance')
+plt.subplot(1,2,1)
+# plt.scatter(lambda_vec, num_terms)
+plt.scatter(L, N)
+plt.xlabel("Threshold ($\lambda$)",fontsize=18)
+plt.ylabel("Number of terms",fontsize=18)
+plt.subplot(1,2,2)
+# plt.scatter(num_terms, eudist_vec)
+plt.scatter(N, np.log(E))
+plt.xlabel("Number of terms",fontsize=18)
+plt.ylabel("log Euclidean distance",fontsize=18)
+plt.subplots_adjust(wspace=0.5)
+
+plt.show()
 
