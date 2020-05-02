@@ -8,7 +8,7 @@ from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
 
 def RSM(t, pop):
-    a_r, a_s, a_m, K, e, f = 1.1, 2.0, 1.1, 10**6, 0.00001, 0.00001
+    a_r, a_s, a_m, K, e, f = 1.1, 2.0, 1.1, 10**4, 0.01, 0.01
     R, S, M = pop
     return [a_r*R*(1-(R+S+M)/K),
             a_s*S*(1-(R+S+M)/K) - e*S*R - f*S*M,
@@ -68,6 +68,7 @@ theta = p1.T
 exp_data = exp_data.T
 coeff_ = np.dot(np.linalg.pinv(theta), exp_data)
 
+print(exp_data.shape)
 
 def sparsifyDynamics(theta, exp_data, lambda1):
     for k in range(1000):
@@ -78,7 +79,7 @@ def sparsifyDynamics(theta, exp_data, lambda1):
             coeff_[big_idx[:, i], i] = np.dot(np.linalg.pinv(theta[:, big_idx[:, i]]), exp_data[:, i])
     return coeff_
 
-coeff_ = sparsifyDynamics(theta, exp_data, 5e-7)
+coeff_ = sparsifyDynamics(theta, exp_data, 0.05)
 
 
 print(coeff_)

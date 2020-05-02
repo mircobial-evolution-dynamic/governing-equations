@@ -13,12 +13,12 @@ n = 1
 
 def hillfunc(t, x):
     k = 1
-    return 1 + np.divide(x**4,  (k**4 + x**4))
+    return np.divide(x**4, (2**4 + x**4))*x
 
 def new_hillfunc(t, x):
     return np.divide((0.756*(x**4) + 0.378), (0.378 + 0.378 * (x**4)))
 
-tspan = np.linspace(0.01, 2, num=400)
+tspan = np.linspace(0.01, 10, num=1000)
 dt = 0.01
 ini = [0.001]
 sol = integrate.solve_ivp(hillfunc, [tspan[0], tspan[-1]], ini, method='RK45', t_eval=tspan)
