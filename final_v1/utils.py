@@ -198,7 +198,7 @@ def eucdist_2D(matrix1, matrix2):
     return eucdist
 
 
-def eucdist_evaluate(theta, lambdastart, lambdaend, numlambda, dx):
+def evaluate_eucdist(theta, lambdastart, lambdaend, numlambda, dx):
     """
     evaluate the identified system based on calculated euclidean distance
     :param theta: library
@@ -221,3 +221,58 @@ def eucdist_evaluate(theta, lambdastart, lambdaend, numlambda, dx):
     eucdist_vec = np.array(eucdist_vec)
     num_terms = np.array(num_terms)
     return lambda_vec, eucdist_vec, num_terms
+
+
+def error(matrix1, matrix2):
+    '''
+    Calculate the average square of distance between two matrices.
+    return sum (abs(matrix1_element-matrix2_element)^2)/N
+    N is the total number of elements in each matrix (matrix1 and matrix2 have the same dimensions)
+    '''
+    m,n = matrix1.shape
+    m1,n1 = matrix2.shape
+    if m != m1 or n != n1:
+        import os, warnings
+        warnings.warn('dimession conflict')
+    eucdist = 0
+    for i in range(n):
+        eucdist = eucdist + np.linalg.norm(matrix1[:,i]-matrix2[:,i])
+        
+    return eucdist/(m*n)
+
+
+
+def evaluate_AIC(theta, lambdastart, lambdaend, numlambda, dx):
+    '''
+    evaluate the identified system based on calculated information criteria
+    :param theta: library
+    :param lambdastart: smallest lambda value
+    :param lambdaend: largest lambda value
+    :param numlambda: number of lambda value
+    :param dx: experimental data or simulated data from true system
+    return lambda vector, AIC vector (as the evaluation index) or AICc or BIC, and num of terms
+    '''
+    import math
+    from numpy import log as ln
+    m,n = theta.shape  #m is time steps
+    lambda_vec = np.logspace(lambdastart, lambdaend, numlambda)
+    AIC_vec = []
+    AICc_vec = []
+    BIC_vec = []
+    num_terms = []
+    for i in lambda_vec:
+        Xi = sparsifyDynamics(theta, dx, i)
+        b = np.nonzero(Xi)
+        p = len(np.unique(b[0]))
+        sim_dx = np.matmul(theta,Xi)
+#         aic = -math.log10(error(dx,sim_dx))+2*p
+        aic = n*ln(error(dx,sim_dx)/n)+2*p
+        aic_c = aic+2*p*(p+1)/(m-p-1)
+        bic = aic - 2*p + 2*p*math.log(m)
+        AIC_vec.append(aic)
+        AICc_vec.append(aic_c)
+        BIC_vec.append(bic)
+        num_terms.append(np.count_nonzero(Xi))
+    AIC_vec = np.array(AIC_vec)
+    num_terms = np.array(num_terms)
+    return lambda_vec, AIC_vec, AICc_vec, BIC_vec, num_terms
