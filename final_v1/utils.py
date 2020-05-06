@@ -190,7 +190,7 @@ def eucdist_2D(matrix1, matrix2):
     m1, n1 = matrix2.shape
     if m != m1 or n != n1:
         import os, warnings
-        warnings.warn('dimession conflict')
+        warnings.warn('dimensions conflict')
     eucdist = 0
     for i in range(n):
         eucdist = eucdist + np.linalg.norm(matrix1[:, i] - matrix2[:, i])
