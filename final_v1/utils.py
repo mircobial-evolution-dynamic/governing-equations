@@ -5,13 +5,17 @@ import operator
 from scipy import linalg
 
 
-# build library
 def power_(d, order):
-    # d is the number of variables; order of polynomials
+    """
+    helper function for lib_terms
+    :param d: number of variables, dtype = int
+    :param order: order of polynomials, dtype = int
+    :return: tuple of powers
+    """
     powers = []
     for p in range(1, order + 1):
         size = d + p - 1
-        for indices in itertools.combinations(range(size), d - 1):  ##combinations
+        for indices in itertools.combinations(range(size), d - 1):  #combinations
             starts = [0] + [index + 1 for index in indices]
             stops = indices + (size,)
             powers.append(tuple(map(operator.sub, stops, starts)))
@@ -19,6 +23,14 @@ def power_(d, order):
 
 
 def lib_terms(data, order, description):
+    """
+    generate the library for system identification
+    :param data: input dynamic values over time, data.shape = (the number of variable, length of time ), dtype = array
+    :param order: order of polynomial, dtype = int
+    :param description: the variable , dtype = str
+    :return theta: library candidates, data.shape =(length of time, the number of candidate), dtype = array
+    :return descr: library description
+    """
     # description is a list of name of variables, like [R, M, S]
     # description of lib
     descr = []
@@ -38,22 +50,34 @@ def lib_terms(data, order, description):
     return theta, descr
 
 
-
 #ADM algrithm
 def soft_thresholding(X, lambda_):
+    """
+    helper function for ADM
+    :param X: simulated data = null space of library * coeff_
+    :param lambda_: threshold in lasso regression
+    :return: simulated data in where the small trivial term has been removed
+    """
     temp_compare = X.T.copy()
     for i in range(len(X)):
         if abs(X[i]) - lambda_ < 0:
             temp_compare[:, [i]] = 0
         else:
             temp_compare[:, [i]] = abs(X[i]) - lambda_
-    # tmp_compare = X[np.where(abs(X) - lambda_ > 0)]
-    # tmp_compare = np.expand_dims(tmp_compare, axis =1)
     print(lambda_)
     return np.multiply(np.sign(X), temp_compare.T)
 
 
 def ADM(lib_null, q_init, lambda_, MaxIter, tol):
+    """
+    helper function in the ADMinitvary
+    :param lib_null: null space of library
+    :param q_init: initial guess of normalized null space
+    :param lambda_: threshold in lasso regression
+    :param MaxIter: maximum iterative time
+    :param tol: tolerance
+    :return: normalized null space
+    """
     q = q_init.copy()
     for i in range(MaxIter):
         q_old = q.copy()
@@ -66,7 +90,17 @@ def ADM(lib_null, q_init, lambda_, MaxIter, tol):
             return q
 
 
-def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
+def ADMinitvary(lib_null, lambda_, MaxIter, tol):
+    """
+    helper function for ADMpareto
+    :param lib_null: null space of library
+    :param lambda_: threshold in lasso regression
+    :param MaxIter: maximum iterative time
+    :param tol: tolerance
+    :return ind_lib: index of library that is the identified term
+    :return Xi: identified term
+    :return numterms: number of identified term
+    """
     lib_null_norm = lib_null.copy()
     for i in range(len(lib_null[0])):
         lib_null_norm[:, i] = lib_null[:, i] / lib_null[:, i].mean()
@@ -91,30 +125,14 @@ def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
     numterms = len(ind_lib)
     return ind_lib, Xi, numterms
 
-
-def sparsifyDynamics(Theta, dx, Lambda):
-    # theta.shape = 248*10 (time points*functions); dx.shape = 248*3 (time points*variables)
-    # need to ensure size or dimenssions !!!
-    #     dx = dx.T
-    m, n = dx.shape  # (248*3)
-    Xi = np.dot(np.linalg.pinv(Theta), dx)  # Xi.shape = 10*3
-    # lambda is sparasification knob
-    for k in range(10):  ###??
-        small_idx = (abs(Xi) < Lambda)
-        big_idx = (abs(Xi) >= Lambda)
-        Xi[small_idx] = 0
-    #     for i in range(n):
-    #         #big_idx = np.bitwise_not([small_idx[:,i]]).T
-    #         if dx == 0:
-    #             Xi[big_idx[:,i],i] = linalg.null_space(Theta[:,big_idx[:,i]])
-    #         else:
-    #             Xi[big_idx[:,i],i] = np.dot(np.linalg.pinv(Theta[:,big_idx[:,i]]), dx[:, i])
-
-    return Xi  # num of functions*num of variables
-
-
-
-def ADMpareto(term_lib, tol, pflag):
+def ADMpareto(term_lib, tol):
+    """
+    system identification - iterative method to find the best fit
+    :param term_lib: library
+    :param tol: tolerance
+    :return: dictionaries - dic_Xi: calculated coefficient, dic_lib: selected library candidate
+                            dic_lambda: corresponding lambda value, dic_error: corresponding error value
+    """
     lib_null = linalg.null_space(term_lib)
     num = 1
     lambda_ = 1e-8
@@ -126,7 +144,7 @@ def ADMpareto(term_lib, tol, pflag):
     dic_lambda = {}
     ii = 0
     while num > 0:
-        temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag)
+        temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol)
         dic_lib[ii] = temp_ind_lib
         dic_Xi[ii] = temp_Xi
         dic_num[ii] = temp_numterms
@@ -143,15 +161,31 @@ def ADMpareto(term_lib, tol, pflag):
     return dic_Xi, dic_lib, dic_lambda, dic_num, dic_error
 
 
-def data_derivative(sol_, d_sol_):
-    n = len(sol_)
-    for i in range(n):
-        sol_ = np.vstack((sol_, np.multiply(sol_[i], d_sol_)))
-    return sol_
+def sparsifyDynamics(Theta, dx, Lambda):
+    """
+    sparse identification
+    :param Theta: library
+    :param dx: experimental data or simulated data which is as the standard to evaluate the identified system
+    :param Lambda: the threshold in lasso regression
+    :return: identified system
+    """
+    Xi = np.dot(np.linalg.pinv(Theta), dx)
+    for k in range(10):
+        small_idx = (abs(Xi) < Lambda)
+        Xi[small_idx] = 0
+
+    return Xi
+
 
 
 def eucdist_2D(matrix1, matrix2):
-    # return sum of euclidean distance of two matrices
+    """
+    helper function for eucdist_evaluate
+    calculate the euclidean distance between the true system and identified system
+    :param matrix1: true system
+    :param matrix2: identified system
+    :return: euclidean distance
+    """
     m, n = matrix1.shape
     m1, n1 = matrix2.shape
     if m != m1 or n != n1:
@@ -164,8 +198,18 @@ def eucdist_2D(matrix1, matrix2):
     return eucdist
 
 
-def evaluate(theta, lambdastart, lambdaend, numlambda, dx):
-    # return lambda vector, euclidean vector (as the evaluation index), and num of terms
+def eucdist_evaluate(theta, lambdastart, lambdaend, numlambda, dx):
+    """
+    evaluate the identified system based on calculated euclidean distance
+    :param theta: library
+    :param lambdastart: smallest lambda value
+    :param lambdaend: largest lambda value
+    :param numlambda: number of lambda value
+    :param dx: experimental data or simulated data from true system
+    :return: lambda_vec: different lambda value, eucdist_vec: corresponding euclidean distance,
+            num_terms: the number of identified terms
+    """
+
     lambda_vec = np.logspace(lambdastart, lambdaend, numlambda)
     eucdist_vec = []
     num_terms = []
@@ -177,12 +221,3 @@ def evaluate(theta, lambdastart, lambdaend, numlambda, dx):
     eucdist_vec = np.array(eucdist_vec)
     num_terms = np.array(num_terms)
     return lambda_vec, eucdist_vec, num_terms
-
-
-def MMKinetics(t, x, Vmax, Km, k):
-    return k - np.divide(Vmax * x, (Km + x))
-
-    ###
-
-def xy_func(x,y):
-    return x+y
