@@ -221,15 +221,3 @@ def eucdist_evaluate(theta, lambdastart, lambdaend, numlambda, dx):
     eucdist_vec = np.array(eucdist_vec)
     num_terms = np.array(num_terms)
     return lambda_vec, eucdist_vec, num_terms
-<<<<<<< HEAD
-=======
-
-
-def MMKinetics(t, x, Vmax, Km, k):
-    return k - np.divide(Vmax * x, (Km + x))
-
-    ###
-
-def xy_func(x,y):
-    return x+y
->>>>>>> 13fb017e0c4c33bbf8e5c8a3835caee841a6a2ee
