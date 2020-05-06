@@ -28,7 +28,7 @@ term_lib = np.hstack((term_lib, term_lib * sol_dx.T))
 
 
 tol, pflag = 1e-5,1
-dic_Xi, dic_lib, dic_lambda, dic_num, dic_error = ADMpareto(term_lib,tol, pflag)
+dic_Xi, dic_lib, dic_lambda, dic_num, dic_error = ADMpareto(term_lib,tol)
 lambda_vec = list(dic_lambda.values())
 terms_vec = list(dic_num.values())
 err_vec = list(dic_error.values())

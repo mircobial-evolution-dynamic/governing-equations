@@ -74,7 +74,7 @@ def ADM(lib_null, q_init, lambda_, MaxIter, tol):
             return q
 
 
-def ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag):
+def ADMinitvary(lib_null, lambda_, MaxIter, tol):
     lib_null_norm = lib_null.copy()
     for i in range(len(lib_null[0])):
         lib_null_norm[:, i] = lib_null[:, i] / lib_null[:, i].mean()
@@ -134,7 +134,7 @@ def soft_thresholding(X, lambda_):
     return np.multiply(np.sign(X), temp_compare.T)
 
 
-def ADMpareto(term_lib, tol, pflag):
+def ADMpareto(term_lib, tol):
     lib_null = linalg.null_space(term_lib)
     num = 1
     lambda_ = 1e-8
@@ -146,7 +146,7 @@ def ADMpareto(term_lib, tol, pflag):
     dic_lambda = {}
     ii = 0
     while num > 0:
-        temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol, pflag)
+        temp_ind_lib, temp_Xi, temp_numterms = ADMinitvary(lib_null, lambda_, MaxIter, tol)
         dic_lib[ii] = temp_ind_lib
         dic_Xi[ii] = temp_Xi
         dic_num[ii] = temp_numterms
