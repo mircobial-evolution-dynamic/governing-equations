@@ -17,4 +17,5 @@ There are several documents is in good shape (final version):
   - Four .ipynb, each one shows one example of the governing equation. 
 2. figures folder, in which contains all figures we generate 
 3. final report.pdf
+
 Others are the reduancy files(drafts)
