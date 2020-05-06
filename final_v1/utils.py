@@ -183,3 +183,6 @@ def MMKinetics(t, x, Vmax, Km, k):
     return k - np.divide(Vmax * x, (Km + x))
 
     ###
+
+def xy_func(x,y):
+    return x+y
