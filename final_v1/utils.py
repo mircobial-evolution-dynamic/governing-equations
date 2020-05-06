@@ -64,7 +64,6 @@ def soft_thresholding(X, lambda_):
             temp_compare[:, [i]] = 0
         else:
             temp_compare[:, [i]] = abs(X[i]) - lambda_
-    print(lambda_)
     return np.multiply(np.sign(X), temp_compare.T)
 
 

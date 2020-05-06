@@ -46,17 +46,3 @@ plt.scatter(terms_vec, log_err_vec)
 plt.xlabel("Number of terms")
 plt.ylabel("Error (log)")
 plt.show()
-
-# def new_MMKinetics(term_lib, dic_Xi, n):
-#     half_count = int(term_lib.shape[1] /2)
-#     total_xi = len(dic_Xi)
-#     #term_coff = dic_Xi[total_xi - n]
-#     term_coff = [0.18, -0.9, 0, 0, 0.3, 1, 0, 0]
-#     print(term_coff)
-#     return -np.divide(np.matmul(term_lib[:,:half_count], term_coff[:half_count]),
-#                       np.matmul(term_lib[:,half_count:], term_coff[half_count:]))
-#
-# res2 = new_MMKinetics(term_lib, dic_Xi, 4)
-# plt.plot(sol_dx[0])
-# plt.plot(res2)
-# plt.show()
