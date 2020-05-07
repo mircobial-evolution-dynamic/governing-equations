@@ -18,6 +18,6 @@ There are several documents is in good shape (final version):
   - Utlis.py contains all functions/ algorithms that is utlized in system identification
   - Four .ipynb, each one shows one example of the governing equation. 
 2. figures folder, in which contains all figures we generate 
-3. final report.pdf
+3. GBCB_5874_report.pdf, final report
 
 Others are the reduancy files(drafts)
