@@ -1,7 +1,9 @@
 # governing-equations
 This project is a in-class study case to understand SINDy algorithm. 
 
-This sparse identificiation method is developed by Dr. Steven L. Brunton et.al (citation: Discovering governing equations from data by sparse identification of nonlinear dynamical systems, PNAS)
+This sparse identificiation method is developed by Dr. Steven L. Brunton et.al 
+- citation1: Discovering governing equations from data by sparse identification of nonlinear dynamical systems, PNAS
+- citation2: Inferring Biological Networks by Sparse Identification fo Nonlinear Dynamics, (Brunton Group, Niall Mangan), IEEE Transactions on Molecular, Biological and Multi-Scale Communications
 
 Here, we transimitted this method from MATLAB to python, and also applied this method to several biological systems.
 - Lorenz system 
